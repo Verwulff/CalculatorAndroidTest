@@ -21,7 +21,7 @@
         autofit:minTextSize="8sp"
         />
 
-    <TextView
+    <me.grantland.widget.AutofitTextView
         android:id="@+id/resultField"
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -31,8 +31,11 @@
         android:layout_weight="4"
         android:maxLines="1"
         android:background="@android:color/holo_blue_dark"
+        android:textColor="@android:color/white"
         android:gravity="right"
-        android:textColor="@android:color/white" />
+        autofit:minTextSize="8sp"
+        />
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,7 +50,7 @@
             android:text="+"
             android:background="@android:color/holo_blue_light"
             android:textColor="@android:color/white"
-            android:onClick="onOperationClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -55,7 +58,7 @@
             android:text="-"
             android:background="@android:color/holo_blue_light"
             android:textColor="@android:color/white"
-            android:onClick="onOperationClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -63,7 +66,7 @@
             android:text="×"
             android:background="@android:color/holo_blue_light"
             android:textColor="@android:color/white"
-            android:onClick="onOperationClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -71,7 +74,7 @@
             android:text="÷"
             android:background="@android:color/holo_blue_light"
             android:textColor="@android:color/white"
-            android:onClick="onOperationClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:id="@+id/equalButton"
             android:layout_weight="1"
@@ -94,7 +97,7 @@
             android:text="("
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onOperationClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -102,7 +105,7 @@
             android:text=")"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onOperationClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -125,7 +128,7 @@
             android:text="7"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -133,7 +136,7 @@
             android:text="8"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -141,7 +144,7 @@
             android:text="9"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -156,7 +159,7 @@
             android:text="4"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -164,7 +167,7 @@
             android:text="5"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -172,7 +175,7 @@
             android:text="6"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -187,7 +190,7 @@
             android:text="1"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -195,7 +198,7 @@
             android:text="2"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -203,7 +206,7 @@
             android:text="3"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -218,7 +221,7 @@
             android:text="C"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onDelClick"/>
+            android:onClick="onClearClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -226,7 +229,7 @@
             android:text="0"
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
         <Button
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -234,7 +237,7 @@
             android:text="."
             android:background="@android:color/white"
             android:textColor="@android:color/black"
-            android:onClick="onNumberClick"/>
+            android:onClick="onCalcClick"/>
     </LinearLayout>
 
 </LinearLayout>

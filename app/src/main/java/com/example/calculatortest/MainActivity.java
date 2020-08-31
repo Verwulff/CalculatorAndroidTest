@@ -1,95 +1,83 @@
 package com.example.calculatortest;
 
+import android.content.Intent;
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView resultField;
     TextView calcField;
     Button equalButton;
-    String lastDigit = "="; // последняя операция
-    List<Calculator> calc;
-    StringBuilder currentNumber;
-    int depths = 0;
-    int parenthesesOpen=0;
-    int parenthesesClose=0;
+
+    CalcParser calcParser;
+
     //переменные для обработки всплывающего меню
+    private static final long DOUBLE_CLICK_TIME_DELTA = 300;
+    private static final long CORNER_TAP_TIME = 5000;
+    private static final long EQUAL_PRESS_TIME = 4000;
+    private static final float X_COORD_MAX = 70.0f;
+    private static final float Y_COORD_MAX = 70.0f;
     long equalPressStartTime;
     long equalPressEndTime;
     long onScreenTouchTimeFirst;
     long onScreenTouchTimeSecond;
-    boolean menuCorrectTime = false;
+    boolean isItFirstClick = true;
+
+    //Проверяет удалена ли с помощью клавиши операция. Если только цифра, то установлена на false
+    boolean isDelOperation = false;
+    //Переменная для запрета кнопки дел после нажатия равно до нажатия кнопки
+    boolean isDelEnable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        resultField =(TextView) findViewById(R.id.resultField);
-        calcField =(TextView) findViewById(R.id.calcField);
+        resultField = (TextView) findViewById(R.id.resultField);
+        calcField = (TextView) findViewById(R.id.calcField);
         equalButton = (Button) findViewById(R.id.equalButton);
-        calc = new LinkedList<Calculator>();
-        calc.add(new Calculator());
-        currentNumber = new StringBuilder();
 
+        calcParser = new CalcParser();
+
+
+        //Обработчик кликов по углу экрана
         calcField.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 float x = event.getX();
                 float y = event.getY();
-                switch (event.getAction())
-                {
+                switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        onScreenTouchTimeFirst = System.currentTimeMillis();
-                        Long check = (onScreenTouchTimeFirst - equalPressEndTime)/1000;
-                        if(check<5)
-                        {
-                            showMessage("Успел");
-                        }
-                        resultField.append(check.toString());
+                        hiddenMenuOp(x, y);
                         break;
                 }
                 return false;
             }
         });
 
+        //Обработчик нажайти клавиши =
         equalButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction())
-                {
+                switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         equalPressStartTime = System.currentTimeMillis();
                         break;
                     case MotionEvent.ACTION_UP:
                         equalPressEndTime = System.currentTimeMillis();
-                        Long check = (equalPressEndTime-equalPressStartTime)/1000;
-                        if (check>=4)
-                        {
-                            menuCorrectTime = true;
-                            showMessage("Прикинь, работает");
-                        }
-                        resultField.append(check.toString());
-                        calc.get(depths).result();
+                        if (calcParser.equalParser()) {
+                            resultField.append(calcParser.getResult());
+                        } else showMessage("Invalid function");
+                        calcParser = new CalcParser();
+                        isDelEnable = false;
                         break;
                 }
                 return false;
@@ -97,85 +85,99 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // обработка нажатия на числовую кнопку
-    public void onNumberClick(View view){
-
-        Button button = (Button)view;
+    //Обработчик нажатий на основные клавиши калькулятора
+    public void onCalcClick(View view) {
+        Button button = (Button) view;
         String digit = button.getText().toString();
-        if (!Checker.outOfDigits(currentNumber.toString())) {
-            showMessage("Число не может быть больше 25 знаков");
-            return;
+        isDelEnable = true;
+        if (isDelOperation) {
+            calcParser = new CalcParser();
+            calcParser.parser(calcField.getText().toString());
+            isDelOperation = false;
         }
-        if (digit.equals(".")){
-            if (!Checker.isNumber(lastDigit)){
-                showMessage("Сперва введите число");
-                return;
-            }
-            if (currentNumber.toString().contains(".")){
-                showMessage("Не больше одного разделителя в числе");
-                return;
-            }
-        }
-        lastDigit = digit;
-        currentNumber.append(digit);
-        calcField.append(digit);
-    }
-
-    // обработка нажатия на кнопку операции
-    public void onOperationClick(View view){
-
-        Button button = (Button)view;
-        String s;
-        s = button.getText().toString();
-        switch(s) {
-            case "(":
-                depths++;
-                parenthesesOpen++;
-                calc.add(new Calculator());
-                calcField.append(s);
+        digit = Checker.validButtonText(digit);
+        int inputCheck = calcParser.inputParse(digit);
+        switch (inputCheck) {
+            //если все хорошо
+            case 0:
+                calcField.append(digit);
                 break;
-            case ")":
-                depths--;
-                parenthesesClose++;
-                calc.get(depths).numbers.add(calc.get(depths+1).result());
-                calc.remove(depths+1);
-                calcField.append(s);
+            //если происходит замена последней операции на новую
+            case 1:
+                calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
+                calcField.append(digit);
                 break;
-            case "+":
-                calc.get(depths).numbers.add(Double.parseDouble(currentNumber.toString()));
-                calc.get(depths).operations.add(s);
-                currentNumber.setLength(0);
-                calcField.append(s);
+            //если надо обнулить поля с началом нового выражения
+            case 2:
+                calcField.setText("");
+                calcField.append(digit);
+                resultField.setText("");
                 break;
-            case "-":
-                calc.get(depths).numbers.add(Double.parseDouble(currentNumber.toString()));
-                calc.get(depths).operations.add(s);
-                currentNumber.setLength(0);
-                calcField.append(s);
+            //Если действие не является математически верным
+            case 3:
+                showMessage("Invalid operation");
                 break;
-            case "×":
-                s = "*";
-                calc.get(depths).numbers.add(Double.parseDouble(currentNumber.toString()));
-                calc.get(depths).operations.add(s);
-                currentNumber.setLength(0);
-                calcField.append(s);
+            //если действией не является математически верным, но при этом это начало нового вычисления
+            case 4:
+                showMessage("Invalid operation");
+                resultField.setText("");
                 break;
-            case "÷":
-                s="/";
-                calc.get(depths).numbers.add(Double.parseDouble(currentNumber.toString()));
-                calc.get(depths).operations.add(s);
-                currentNumber.setLength(0);
-                calcField.append(s);
-                break;
+            //непонятные непредвиденные обстоятельства
             default:
+                showMessage("Что-то пошло не так");
                 break;
-
         }
     }
 
-    private void showMessage(String message)
-    {
-        Toast toast = Toast.makeText(this, message,Toast.LENGTH_LONG);
+    //Обработчик нажатия кнопки C(Clear)
+    public void onClearClick(View view) {
+        calcField.setText("");
+        resultField.setText("");
+        calcParser = new CalcParser();
+        isDelEnable = true;
+    }
+
+    //Обработчик нажайтий кнопки Del.(Backspace)
+    public void onDelClick(View view) {
+        if (isDelEnable) {
+            boolean check = calcParser.delNumber();
+            if (check) {
+                calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
+            } else {
+                if (calcField.getText().toString().length() > 0)
+                    calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
+                isDelOperation = true;
+            }
+        }
+    }
+
+    //Функция, отвечающая за открытие секретного меню при выполненных условиях
+    private void hiddenMenuOp(float x, float y) {
+        if (x <= X_COORD_MAX && y <= Y_COORD_MAX) {
+            if (isItFirstClick) {
+                onScreenTouchTimeFirst = System.currentTimeMillis();
+                isItFirstClick = false;
+            } else {
+                onScreenTouchTimeSecond = System.currentTimeMillis();
+                Long doubleClickCheck = onScreenTouchTimeSecond - onScreenTouchTimeFirst;
+                if (doubleClickCheck <= DOUBLE_CLICK_TIME_DELTA) {
+                    Long tapTimeCheck = onScreenTouchTimeFirst - equalPressEndTime;
+                    if (tapTimeCheck <= CORNER_TAP_TIME) {
+                        Long equalTimeCheck = equalPressEndTime - equalPressStartTime;
+                        if (equalTimeCheck >= EQUAL_PRESS_TIME) {
+                            Intent intent = new Intent(MainActivity.this, HiddenMenu.class);
+                            startActivity(intent);
+                        }
+                    }
+                }
+                isItFirstClick = true;
+            }
+        }
+    }
+
+    //выводит высплывающее сообщение
+    private void showMessage(String message) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         toast.show();
     }
 
