@@ -13,28 +13,28 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView resultField;
-    TextView calcField;
-    Button equalButton;
-
-    CalcParser calcParser;
-
     //переменные для обработки всплывающего меню
     private static final long DOUBLE_CLICK_TIME_DELTA = 300;
     private static final long CORNER_TAP_TIME = 5000;
     private static final long EQUAL_PRESS_TIME = 4000;
     private static final float X_COORD_MAX = 70.0f;
     private static final float Y_COORD_MAX = 70.0f;
-    long equalPressStartTime;
-    long equalPressEndTime;
-    long onScreenTouchTimeFirst;
-    long onScreenTouchTimeSecond;
-    boolean isItFirstClick = true;
+    private long equalPressStartTime;
+    private long equalPressEndTime;
+    private long onScreenTouchTimeFirst;
+    private long onScreenTouchTimeSecond;
+    private boolean isItFirstClick = true;
+
+    TextView resultField;
+    TextView calcField;
+    Button equalButton;
+
+    private CalcParser calcParser;
 
     //Проверяет удалена ли с помощью клавиши операция. Если только цифра, то установлена на false
-    boolean isDelOperation = false;
+    private boolean isDelOperation = false;
     //Переменная для запрета кнопки дел после нажатия равно до нажатия кнопки
-    boolean isDelEnable = true;
+    private boolean isDelEnable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,26 +99,26 @@ public class MainActivity extends AppCompatActivity {
         int inputCheck = calcParser.inputParse(digit);
         switch (inputCheck) {
             //если все хорошо
-            case 0:
+            case Checker.APPEND:
                 calcField.append(digit);
                 break;
             //если происходит замена последней операции на новую
-            case 1:
+            case Checker.REPLACE:
                 calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
                 calcField.append(digit);
                 break;
             //если надо обнулить поля с началом нового выражения
-            case 2:
+            case Checker.CLEAR_AND_APPEND:
                 calcField.setText("");
                 calcField.append(digit);
                 resultField.setText("");
                 break;
-            //Если действие не является математически верным
-            case 3:
-                //showMessage("Invalid operation");
+            //Если действие не является математически верным, оно игнорируется
+            case Checker.IGNORE:
+                /* IGNORE */
                 break;
             //если действией не является математически верным, но при этом это начало нового вычисления
-            case 4:
+            case Checker.CLEAR_AND_IGNORE:
                 showMessage("Invalid operation");
                 resultField.setText("");
                 break;
@@ -139,39 +139,39 @@ public class MainActivity extends AppCompatActivity {
 
     //Обработчик нажайтий кнопки Del.(Backspace)
     public void onDelClick(View view) {
-        if (isDelEnable) {
-            boolean check = calcParser.delNumber();
-            if (check) {
+        if (!isDelEnable)
+            return;
+        boolean check = calcParser.delNumber();
+        if (check) {
+            calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
+        } else {
+            if (calcField.getText().toString().length() > 0)
                 calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
-            } else {
-                if (calcField.getText().toString().length() > 0)
-                    calcField.setText(calcField.getText().toString().substring(0, calcField.getText().length() - 1));
-                isDelOperation = true;
-            }
+            isDelOperation = true;
         }
     }
 
     //Функция, отвечающая за открытие секретного меню при выполненных условиях
     private void hiddenMenuOp(float x, float y) {
-        if (x <= X_COORD_MAX && y <= Y_COORD_MAX) {
-            if (isItFirstClick) {
-                onScreenTouchTimeFirst = System.currentTimeMillis();
-                isItFirstClick = false;
-            } else {
-                onScreenTouchTimeSecond = System.currentTimeMillis();
-                Long doubleClickCheck = onScreenTouchTimeSecond - onScreenTouchTimeFirst;
-                if (doubleClickCheck <= DOUBLE_CLICK_TIME_DELTA) {
-                    Long tapTimeCheck = onScreenTouchTimeFirst - equalPressEndTime;
-                    if (tapTimeCheck <= CORNER_TAP_TIME) {
-                        Long equalTimeCheck = equalPressEndTime - equalPressStartTime;
-                        if (equalTimeCheck >= EQUAL_PRESS_TIME) {
-                            Intent intent = new Intent(MainActivity.this, HiddenMenu.class);
-                            startActivity(intent);
-                        }
+        if (x > X_COORD_MAX || y > Y_COORD_MAX)
+            return;
+        if (isItFirstClick) {
+            onScreenTouchTimeFirst = System.currentTimeMillis();
+            isItFirstClick = false;
+        } else {
+            onScreenTouchTimeSecond = System.currentTimeMillis();
+            Long doubleClickCheck = onScreenTouchTimeSecond - onScreenTouchTimeFirst;
+            if (doubleClickCheck <= DOUBLE_CLICK_TIME_DELTA) {
+                Long tapTimeCheck = onScreenTouchTimeFirst - equalPressEndTime;
+                if (tapTimeCheck <= CORNER_TAP_TIME) {
+                    Long equalTimeCheck = equalPressEndTime - equalPressStartTime;
+                    if (equalTimeCheck >= EQUAL_PRESS_TIME) {
+                        Intent intent = new Intent(MainActivity.this, HiddenMenu.class);
+                        startActivity(intent);
                     }
                 }
-                isItFirstClick = true;
             }
+            isItFirstClick = true;
         }
     }
 

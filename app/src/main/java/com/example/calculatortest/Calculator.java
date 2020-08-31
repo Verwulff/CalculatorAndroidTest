@@ -44,7 +44,7 @@ public class Calculator {
         //произведения/деления сохраненного ранее числа на новое входное число
         else if (Checker.isMultDiv(lastOperation)) {
             double sum = numbers.get(numbers.size() - 1);
-            if (lastOperation.equals(Checker.MULTIPLY))
+            if (Checker.isMult(lastOperation))
                 sum = sum * Double.parseDouble(currentNumber);
             else sum = sum / Double.parseDouble(currentNumber);
             numbers.set(numbers.size() - 1, sum);

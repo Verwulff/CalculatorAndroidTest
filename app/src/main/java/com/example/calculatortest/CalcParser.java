@@ -44,19 +44,17 @@ public class CalcParser {
 
     //Определяет какая кнопка нажата
     public int inputParse(String newDigit) {
-        int result = -1;
-        if (Checker.isPlusMinus(newDigit)) {
-            result = plusMinusParse(newDigit);
-        } else if (Checker.isMultDiv(newDigit)) {
-            result = multDivParse(newDigit);
-        } else if (newDigit.equals(Checker.OPEN_PARENTHESES)) {
-            result = openParenthesesParse(newDigit);
-        } else if (Checker.isEndEquation(newDigit)) {
-            result = closeParenthesesParse(newDigit);
-        } else if (Checker.isNumber(newDigit)) {
-            result = numberParse(newDigit);
-        }
-        return result;
+        if (Checker.isPlusMinus(newDigit))
+            return plusMinusParse(newDigit);
+        if (Checker.isMultDiv(newDigit))
+            return multDivParse(newDigit);
+        if (Checker.isOpenPar(newDigit))
+            return openParenthesesParse(newDigit);
+        if (Checker.isEndEquation(newDigit))
+            return closeParenthesesParse(newDigit);
+        if (Checker.isNumber(newDigit))
+            return numberParse(newDigit);
+        return Checker.UNEXPECTED_BEHAVIOR;
     }
 
     //удаляет элемент. Если удалено число, возвращает тру, если операция - возвращает фолс
@@ -67,16 +65,13 @@ public class CalcParser {
                 lastDigit = lastOperation;
             else lastDigit = Character.toString(currentNumber.charAt(currentNumber.length() - 1));
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     //обработчик нажатия кнопки равно. Если выражение получившееся валидное, возвращает тру. Если выражение некорректно, возвращает фалс
     public boolean equalParser() {
-        if (parenthesesOpen != parenthesesClose)
-            return false;
-        if (lastDigit.equals(Checker.EQUAL))
+        if ((parenthesesOpen != parenthesesClose) || Checker.isEqual(lastDigit))
             return false;
         if (Checker.isNumber(lastDigit) || Checker.isEndEquation(lastDigit)) {
             calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
@@ -92,79 +87,81 @@ public class CalcParser {
 
     //обрабатывает кнопки - и +
     private int plusMinusParse(String newDigit) {
-        int result = -1;
         if (Checker.isStartEquation(lastDigit)) {
-            if (lastDigit.equals(Checker.EQUAL))
-                result = 2;
-            else result = 0;
             currentNumber.setLength(0);
             currentNumber.append(newDigit);
             setLastDigit(newDigit);
+            if (Checker.isEqual(lastDigit))
+                return Checker.CLEAR_AND_APPEND;
+            return Checker.APPEND;
         } else if (Checker.isNumber(lastDigit)) {
-            result = 0;
             calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
             setLastOperation(newDigit);
+            return Checker.APPEND;
         } else if (Checker.isAriphmeticOperation(lastDigit)) {
             if (Checker.isPlusMinus(currentNumber.toString())) {
                 if (!lastDigit.equals(newDigit)) {
                     currentNumber.setLength(0);
                     currentNumber.append(newDigit);
                     setLastDigit(newDigit);
-                    return 1;
-                } else return 3;
+                    return Checker.REPLACE;
+                }
+                return Checker.IGNORE;
             }
-            result = 1;
             setLastOperation(newDigit);
+            return Checker.REPLACE;
         } else if (Checker.isEndEquation(lastDigit)) {
-            result = 0;
             calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
             setLastOperation(newDigit);
+            return Checker.APPEND;
         }
-        return result;
+        return Checker.UNEXPECTED_BEHAVIOR;
     }
 
     //обрабатывает кнопки * и /
     private int multDivParse(String newDigit) {
-        int result = -1;
-        if (Checker.isStartEquation(lastDigit)) {
-            result = 4;
-        } else if (Checker.isNumber(lastDigit)) {
-            result = 0;
+        if (Checker.isStartEquation(lastDigit))
+            return Checker.CLEAR_AND_IGNORE;
+        if (Checker.isNumber(lastDigit)) {
             calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
             setLastOperation(newDigit);
-        } else if (Checker.isPlusMinus(lastDigit)) {
-            if (Checker.isStartEquation(lastOperation)) {
-                result = 3;
-            } else {
-                result = 1;
-                setLastOperation(newDigit);
-            }
-        } else if (Checker.isMultDiv(lastDigit)) {
-            result = 1;
-            setLastOperation(newDigit);
-        } else if (Checker.isEndEquation(lastDigit)) {
-            result = 0;
-            calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
-            setLastOperation(newDigit);
+            return Checker.APPEND;
         }
-        return result;
+        if (Checker.isPlusMinus(lastDigit)) {
+            if (Checker.isStartEquation(lastOperation)) {
+                return Checker.IGNORE;
+            } else {
+                setLastOperation(newDigit);
+                return Checker.REPLACE;
+            }
+        }
+        if (Checker.isMultDiv(lastDigit)) {
+            setLastOperation(newDigit);
+            return Checker.REPLACE;
+        }
+        if (Checker.isEndEquation(lastDigit)) {
+            calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
+            setLastOperation(newDigit);
+            return Checker.APPEND;
+        }
+        return Checker.UNEXPECTED_BEHAVIOR;
     }
 
     //Обрабатывает кнопку (
     private int openParenthesesParse(String newDigit) {
-        int result = -1;
+        int result = Checker.UNEXPECTED_BEHAVIOR;
         if (Checker.isNumber(lastDigit) || Checker.isEndEquation(lastDigit)) {
-            result = 3;
+            result = Checker.IGNORE;
         } else {
             if (Checker.isStartEquation(lastDigit)) {
-                if (lastDigit.equals(Checker.EQUAL))
-                    result = 2;
-                else result = 0;
+                if (Checker.isEqual(lastDigit))
+                    result = Checker.CLEAR_AND_APPEND;
+                else result = Checker.APPEND;
                 calc.get(depths).addNewNumber("0.0", lastOperation);
                 lastOperation = Checker.PLUS;
             } else {
                 //calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
-                result = 0;
+                result = Checker.APPEND;
             }
             calc.add(new Calculator());
             depths++;
@@ -177,13 +174,13 @@ public class CalcParser {
 
     //Обрабатывает кнпоку )
     private int closeParenthesesParse(String newDigit) {
-        int result = -1;
-        if (lastDigit.equals(Checker.EQUAL))
-            result = 4;
+        int result = Checker.UNEXPECTED_BEHAVIOR;
+        if (Checker.isEqual(lastDigit))
+            result = Checker.CLEAR_AND_IGNORE;
         else if (parenthesesOpen == parenthesesClose) {
-            result = 3;
-        } else if (!Checker.isNumber(lastDigit)) {
-            result = 3;
+            result = Checker.IGNORE;
+        } else if (!Checker.isNumber(lastDigit) && !Checker.isEndEquation(lastDigit)) {
+            result = Checker.IGNORE;
         } else {
             parenthesesClose++;
             calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
@@ -193,7 +190,7 @@ public class CalcParser {
             depths--;
             lastOperation = digitStack.pop();
             setLastDigit(newDigit);
-            result = 0;
+            result = Checker.APPEND;
         }
         return result;
     }
@@ -205,22 +202,19 @@ public class CalcParser {
             currentNumber.setLength(0);
         }
         if (Checker.outOfDigits(currentNumber.toString())) {
-            result = 3;
-            return result;
+            return Checker.IGNORE;
         }
         if (Checker.isDote(newDigit)) {
             if (!Checker.isNumber(lastDigit)) {
-                result = 3;
-                return result;
+                return Checker.IGNORE;
             }
             if (currentNumber.toString().contains(Checker.DOTE)) {
-                result = 3;
-                return result;
+                return Checker.IGNORE;
             }
         }
-        if (lastDigit.equals(Checker.EQUAL))
-            result = 2;
-        else result = 0;
+        if (Checker.isEqual(lastDigit))
+            result = Checker.CLEAR_AND_APPEND;
+        else result = Checker.APPEND;
         currentNumber.append(newDigit);
         setLastDigit(newDigit);
 
