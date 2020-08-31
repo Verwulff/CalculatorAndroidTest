@@ -199,6 +199,9 @@ public class CalcParser {
     //обрабатывает нажатие цифровых кнопок и кнопки .
     private int numberParse(String newDigit) {
         int result;
+        if (!Checker.isNumber(lastDigit)) {
+            currentNumber.setLength(0);
+        }
         if (Checker.outOfDigits(currentNumber.toString())) {
             result = 3;
             return result;
@@ -212,9 +215,6 @@ public class CalcParser {
                 result = 3;
                 return result;
             }
-        }
-        if (!Checker.isNumber(lastDigit)) {
-            currentNumber.setLength(0);
         }
         if (lastDigit.equals(Checker.EQUAL))
             result = 2;

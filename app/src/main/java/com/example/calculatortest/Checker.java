@@ -26,7 +26,7 @@ public class Checker {
 
     //проверяет на выход за пределы 25 знаков числа
     public static boolean outOfDigits(String s) {
-        if (s.length() <= MAX_NUMBER_LENGTH)
+        if (s.length() < MAX_NUMBER_LENGTH)
             return false;
         else
             return true;

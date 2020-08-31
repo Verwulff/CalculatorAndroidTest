@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             //Если действие не является математически верным
             case 3:
-                showMessage("Invalid operation");
+                //showMessage("Invalid operation");
                 break;
             //если действией не является математически верным, но при этом это начало нового вычисления
             case 4:
