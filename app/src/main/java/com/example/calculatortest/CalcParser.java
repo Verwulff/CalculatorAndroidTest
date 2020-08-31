@@ -94,7 +94,9 @@ public class CalcParser {
     private int plusMinusParse(String newDigit) {
         int result = -1;
         if (Checker.isStartEquation(lastDigit)) {
-            result = 2;
+            if (lastDigit.equals(Checker.EQUAL))
+                result = 2;
+            else result = 0;
             currentNumber.setLength(0);
             currentNumber.append(newDigit);
             setLastDigit(newDigit);
