@@ -117,7 +117,7 @@ public class CalcParser {
             setLastOperation(newDigit);
         } else if (Checker.isEndEquation(lastDigit)) {
             result = 0;
-            calc.get(depths).addNewNumber(currentNumber.toString(), digitStack.peek());
+            calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
             setLastOperation(newDigit);
         }
         return result;
@@ -144,7 +144,7 @@ public class CalcParser {
             setLastOperation(newDigit);
         } else if (Checker.isEndEquation(lastDigit)) {
             result = 0;
-            calc.get(depths).addNewNumber(currentNumber.toString(), digitStack.peek());
+            calc.get(depths).addNewNumber(currentNumber.toString(), lastOperation);
             setLastOperation(newDigit);
         }
         return result;
