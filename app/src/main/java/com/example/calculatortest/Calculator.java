@@ -6,9 +6,9 @@ import java.util.List;
 public class Calculator {
 
     //Хранит числа
-    List<Double> numbers;
+    private List<Double> numbers;
     //Хранит знаки операций (+ и -)
-    List<String> operations;
+    private List<String> operations;
 
     //конструктор, который инициирует списки
     Calculator() {
